@@ -2,13 +2,51 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BLE Scanner</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Real-Time RSSI Plot with Plotly.js</title>
+    <!-- Include Plotly.js via CDN -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        #plot {
+            width: 800px;
+            height: 400px;
+            margin: auto;
+        }
+        #controls {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        #devicesList {
+            list-style-type: none;
+            padding: 0;
+        }
+        #devicesList li {
+            cursor: pointer;
+            padding: 8px;
+            border: 1px solid #ccc;
+            margin: 5px;
+            border-radius: 4px;
+        }
+        #devicesList li:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
 </head>
 <body>
-    <h1>BLE Device Scanner</h1>
-    <button id="scanButton">Scan for BLE Devices</button>
+    <h1>Real-Time RSSI Data Plot</h1>
+    <div id="plot"></div>
+    <div id="controls">
+        <button id="scanButton">Scan for MIDAS BLE Devices</button>
+        <button id="disconnectButton" disabled>Disconnect</button>
+    </div>
     <ul id="devicesList"></ul>
 
     <script src="app.js"></script>
