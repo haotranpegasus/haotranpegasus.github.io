@@ -18,8 +18,8 @@ h1 {
 
 #plot {
     width: 100%;
-    max-width: 800px;
-    height: 400px;
+    height: 60vh; /* Adjusted to take 60% of the viewport height */
+    max-height: 600px; /* Maximum height for larger screens */
     margin: auto;
     background-color: #1e1e1e;
     border-radius: 8px;
@@ -29,13 +29,16 @@ h1 {
 #controls {
     margin-top: 20px;
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row; /* Changed from column to row for horizontal alignment */
+    gap: 20px; /* Adds space between buttons */
+    flex-wrap: wrap; /* Allows buttons to wrap on smaller screens */
+    justify-content: center;
+    width: 100%;
+    max-width: 800px;
 }
 
 button {
     padding: 12px 24px;
-    margin: 10px;
     font-size: 16px;
     border: none;
     border-radius: 4px;
@@ -43,6 +46,8 @@ button {
     background-color: #6200ee;
     color: #ffffff;
     transition: background-color 0.3s ease, transform 0.2s ease;
+    flex: 1 1 200px; /* Makes buttons flexible and responsive */
+    max-width: 300px; /* Maximum width for buttons */
 }
 
 button:hover {
@@ -53,45 +58,28 @@ button:active {
     transform: scale(0.98);
 }
 
-#devicesList {
-    list-style-type: none;
-    padding: 0;
-    max-width: 800px;
-    width: 100%;
-    margin: 20px auto;
-    text-align: left;
-    overflow-y: auto;
-    max-height: 300px;
-    scrollbar-width: thin;
-    scrollbar-color: #6200ee #1e1e1e;
-}
-
-#devicesList::-webkit-scrollbar {
-    width: 8px;
-}
-
-#devicesList::-webkit-scrollbar-track {
-    background: #1e1e1e;
-}
-
-#devicesList::-webkit-scrollbar-thumb {
-    background-color: #6200ee;
-    border-radius: 4px;
-    border: 2px solid #1e1e1e;
-}
-
-#devicesList li {
-    cursor: pointer;
-    padding: 12px;
-    border: 1px solid #333333;
-    margin-bottom: 10px;
-    border-radius: 4px;
+/* Device Information Section */
+#deviceInfo {
+    margin-top: 20px;
+    padding: 15px;
     background-color: #1e1e1e;
-    transition: background-color 0.3s ease;
+    border-radius: 5px;
+    text-align: left; /* Ensures all text is aligned to the left */
 }
 
-#devicesList li:hover {
-    background-color: #333333;
+#deviceInfo p {
+    margin: 5px 0;
+    font-size: 16px;
+}
+
+#deviceInfo p strong {
+    display: inline-block;
+    width: 150px; /* Adjust the width as needed for label alignment */
+}
+
+#deviceInfo p span {
+    display: inline-block;
+    /* Optional: Add padding or other styles if needed */
 }
 
 #status {
@@ -101,16 +89,111 @@ button:active {
     color: #03dac6; /* Teal color for info */
 }
 
+/* Custom Checkbox Styles */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 16px;
+    position: relative;
+    user-select: none;
+    padding-left: 35px;
+    margin: 0;
+    color: #ffffff;
+}
+
+/* Hide the default checkbox */
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* Create a custom checkmark */
+.checkmark {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 24px;
+    width: 24px;
+    background-color: #1e1e1e;
+    border: 2px solid #6200ee;
+    border-radius: 4px;
+}
+
+/* On mouse-over, add a grey background color */
+.checkbox-container:hover input ~ .checkmark {
+    background-color: #333333;
+}
+
+/* When the checkbox is checked, add a blue background */
+.checkbox-container input:checked ~ .checkmark {
+    background-color: #6200ee;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the checkmark when checked */
+.checkbox-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+/* Style the checkmark/indicator */
+.checkbox-container .checkmark:after {
+    left: 8px;
+    top: 4px;
+    width: 6px;
+    height: 12px;
+    border: solid #ffffff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
 /* Responsive Design */
 @media (max-width: 600px) {
     #plot {
-        height: 300px;
+        height: 50vh; /* Reduce chart height on smaller screens */
     }
     button {
-        width: 80%;
+        width: 100%; /* Buttons take full width on very small screens */
+        max-width: none;
     }
     #devicesList li {
         font-size: 14px;
         padding: 10px;
     }
+    .checkbox-container {
+        padding-left: 35px;
+    }
 }
+
+
+/* New Styles for Left Alignment */
+
+/* Align #controls, #deviceInfo, and #status to the left */
+#controls,
+#deviceInfo,
+#status {
+    align-self: flex-start; /* Overrides the parent alignment to align left */
+    width: 100%;            /* Ensures the elements take full available width */
+    max-width: 800px;       /* Maintains consistency with existing max-width */
+}
+
+/* Optional: Adjust internal alignment within #controls if needed */
+#controls button {
+    flex: 1 1 200px; /* Ensures buttons are responsive and flexible */
+    max-width: 300px; /* Maximum width for buttons */
+}
+
+/* Ensure text within #status is left-aligned */
+#status {
+    text-align: left;
+}
+
