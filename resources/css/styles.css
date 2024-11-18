@@ -1,59 +1,116 @@
+/* Dark Theme Styles */
 body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    padding: 50px;
-    background-color: #f0f0f0;
+    background-color: #121212;
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-h1, h2 {
-    color: #333;
+h1 {
+    margin-bottom: 20px;
 }
 
-#scanButton, #disconnectButton {
-    padding: 15px 25px;
-    font-size: 16px;
-    cursor: pointer;
+#plot {
+    width: 100%;
+    max-width: 800px;
+    height: 400px;
+    margin: auto;
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#controls {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+button {
+    padding: 12px 24px;
     margin: 10px;
+    font-size: 16px;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #6200ee;
+    color: #ffffff;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-#scanButton {
-    background-color: #4CAF50;
-    color: white;
+button:hover {
+    background-color: #3700b3;
 }
 
-#disconnectButton {
-    background-color: #f44336;
-    color: white;
+button:active {
+    transform: scale(0.98);
 }
 
 #devicesList {
     list-style-type: none;
     padding: 0;
-    margin-top: 20px;
+    max-width: 800px;
+    width: 100%;
+    margin: 20px auto;
+    text-align: left;
+    overflow-y: auto;
+    max-height: 300px;
+    scrollbar-width: thin;
+    scrollbar-color: #6200ee #1e1e1e;
+}
+
+#devicesList::-webkit-scrollbar {
+    width: 8px;
+}
+
+#devicesList::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+#devicesList::-webkit-scrollbar-thumb {
+    background-color: #6200ee;
+    border-radius: 4px;
+    border: 2px solid #1e1e1e;
 }
 
 #devicesList li {
-    padding: 10px;
-    border-bottom: 1px solid #ccc;
-    background-color: white;
-    margin: 5px auto;
-    width: 80%;
-    max-width: 400px;
-    border-radius: 5px;
-    transition: background-color 0.3s;
+    cursor: pointer;
+    padding: 12px;
+    border: 1px solid #333333;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    background-color: #1e1e1e;
+    transition: background-color 0.3s ease;
 }
 
 #devicesList li:hover {
-    background-color: #e0e0e0;
+    background-color: #333333;
 }
 
-#graphContainer {
-    margin-top: 30px;
+#status {
+    margin-top: 20px;
+    font-weight: bold;
+    font-size: 18px;
+    color: #03dac6; /* Teal color for info */
 }
 
-canvas {
-    max-width: 600px;
-    margin: 0 auto;
+/* Responsive Design */
+@media (max-width: 600px) {
+    #plot {
+        height: 300px;
+    }
+    button {
+        width: 80%;
+    }
+    #devicesList li {
+        font-size: 14px;
+        padding: 10px;
+    }
 }

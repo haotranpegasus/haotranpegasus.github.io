@@ -2,53 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Real-Time RSSI Plot with Plotly.js</title>
+    <title>Real-Time RSSI Plot with Plotly.js and BLE</title>
     <!-- Include Plotly.js via CDN -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
-        }
-        #plot {
-            width: 800px;
-            height: 400px;
-            margin: auto;
-        }
-        #controls {
-            margin-top: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 5px;
-            font-size: 16px;
-        }
-        #devicesList {
-            list-style-type: none;
-            padding: 0;
-        }
-        #devicesList li {
-            cursor: pointer;
-            padding: 8px;
-            border: 1px solid #ccc;
-            margin: 5px;
-            border-radius: 4px;
-        }
-        #devicesList li:hover {
-            background-color: #f0f0f0;
-        }
-    </style>
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Meta tag for responsive design -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="resources//css/styles.css">
 </head>
 <body>
     <h1>Real-Time RSSI Data Plot</h1>
     <div id="plot"></div>
     <div id="controls">
-        <button id="scanButton">Scan for MIDAS BLE Devices</button>
-        <button id="disconnectButton" disabled>Disconnect</button>
+        <button id="scanButton"><i class="fas fa-search"></i> Scan for MIDAS BLE Devices</button>
+        <button id="disconnectButton" disabled><i class="fas fa-times-circle"></i> Disconnect</button>
     </div>
     <ul id="devicesList"></ul>
+    <div id="status"></div>
 
+    <!-- Link to your external JavaScript file -->
     <script src="resources/js/app.js"></script>
 </body>
 </html>
