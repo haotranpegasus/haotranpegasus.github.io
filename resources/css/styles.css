@@ -13,12 +13,14 @@ body {
 }
 
 h1 {
-    margin-bottom: 20px;
+    margin-bottom: 2px;
+    font-size: 150%;
+
 }
 
 #plot {
     width: 100%;
-    height: 60vh; /* Adjusted to take 60% of the viewport height */
+    height: 100vh; /* Adjusted to take 60% of the viewport height */
     max-height: 600px; /* Maximum height for larger screens */
     margin: auto;
     background-color: #1e1e1e;
@@ -35,6 +37,16 @@ h1 {
     justify-content: center;
     width: 100%;
     max-width: 800px;
+}
+.control-item {
+    display: flex;
+    flex-direction: column;
+    /* Optional: Adjust width or other styles as needed */
+}
+
+.control-item label {
+    margin-bottom: 5px;
+    font-size: 16px;
 }
 
 button {
@@ -61,25 +73,14 @@ button:active {
 /* Device Information Section */
 #deviceInfo {
     margin-top: 20px;
-    padding: 15px;
+    padding: 20px;
     background-color: #1e1e1e;
-    border-radius: 5px;
-    text-align: left; /* Ensures all text is aligned to the left */
-}
-
-#deviceInfo p {
-    margin: 5px 0;
-    font-size: 16px;
-}
-
-#deviceInfo p strong {
-    display: inline-block;
-    width: 150px; /* Adjust the width as needed for label alignment */
-}
-
-#deviceInfo p span {
-    display: inline-block;
-    /* Optional: Add padding or other styles if needed */
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 800px;
 }
 
 #status {
@@ -156,6 +157,37 @@ button:active {
     transform: rotate(45deg);
 }
 
+/* Combo Box Styles */
+.combo-box {
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #6200ee;
+    border-radius: 4px;
+    background-color: #1e1e1e;
+    color: #ffffff;
+    appearance: none; /* Remove default arrow */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="%23ffffff"><polygon points="0,0 10,0 5,5"/></svg>') no-repeat right 10px center;
+    background-size: 10px;
+    padding-right: 30px; /* Space for the custom arrow */
+    cursor: pointer;
+}
+/* Attempt to style the <option> elements */
+.combo-box option {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+.combo-box:hover {
+    border-color: #3700b3;
+}
+
+.combo-box:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(3, 218, 198, 0.5);
+}
+
 /* Responsive Design */
 @media (max-width: 600px) {
     #plot {
@@ -165,12 +197,19 @@ button:active {
         width: 100%; /* Buttons take full width on very small screens */
         max-width: none;
     }
-    #devicesList li {
-        font-size: 14px;
-        padding: 10px;
-    }
     .checkbox-container {
         padding-left: 35px;
+    }
+    /* Ensure combo box spans full width on small screens */
+    .control-item {
+        width: 100%;
+    }
+    .combo-box {
+        width: 100%;
+    }
+    /* Adjust #deviceInfo grid for smaller screens */
+    #deviceInfo {
+        grid-template-columns: 1fr;
     }
 }
 

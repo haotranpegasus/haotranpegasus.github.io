@@ -7,10 +7,12 @@ const deviceNameSpan = document.getElementById('deviceName');
 const deviceVersionSpan = document.getElementById('deviceVersion');
 let connectedDevice = null;
 let characteristic = null;
+let write_characteristic = null;
 
 // Define the service and characteristic UUIDs
 const MIDAS_SERVICE_UUID = '480b1ce0-92ab-485a-af98-80d6727becf1';
 const MIDAS_CHARACTERISTIC_UUID = '480b1ce1-92ab-485a-af98-80d6727becf4';
+const MIDAS_WRITE_CHARACTERISTIC_UUID = '480b1ce1-92ab-485a-af98-80d6727becf5';
 
 // Initialize Plotly chart with dark theme settings
 const plotDiv = document.getElementById('plot');
@@ -294,8 +296,18 @@ async function connectToDevice(device) {
         // Get the service
         const service = await server.getPrimaryService(MIDAS_SERVICE_UUID);
 
+        const characteristics = await service.getCharacteristics();
+        characteristics.forEach((characteristic, index) => {
+            console.log(`\nCharacteristic ${index + 1}:`);
+            console.log(`  UUID: ${characteristic.uuid}`);
+            console.log(`  Properties: ${Object.keys(characteristic.properties).filter(prop => characteristic.properties[prop]).join(', ')}`);
+        });
+
         // Get the characteristic
         characteristic = await service.getCharacteristic(MIDAS_CHARACTERISTIC_UUID);
+        
+        //Get the write characteristic
+        write_characteristic = await service.getCharacteristic(MIDAS_WRITE_CHARACTERISTIC_UUID);
 
         // Remove existing event listener to prevent duplication
         characteristic.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
@@ -334,7 +346,7 @@ async function handleCharacteristicValueChanged(event) {
     const value = event.target.value;
     const data = new Uint8Array(value.buffer);
 
-    if (data.length < 14) {
+    if (data.length < 15) {
         console.warn('Received data packet is smaller than expected.');
         updateStatus('Received incomplete data packet.', true);
         return;
@@ -343,11 +355,15 @@ async function handleCharacteristicValueChanged(event) {
     // Extract RSSI from the 13th byte (index 12)
     let rssi = data[12];
 
+    let tx_power = data[14];
+    tx_power = tx_power > 127 ? tx_power - 256 : tx_power;
+    deviceActualTxPowerSpan.textContent = tx_power;
+
     // Convert RSSI to signed integer if necessary
     rssi = rssi > 127 ? rssi - 256 : rssi;
 
     const currentTime = new Date();
-    console.log(`Received RSSI: ${rssi} dBm at ${currentTime.toLocaleTimeString()}`);
+    // console.log(`Received RSSI: ${rssi} dBm at ${currentTime.toLocaleTimeString()}`);
 
     // Append to CSV if logging is active
     if (isLogging && writableStream) {
@@ -400,4 +416,40 @@ logButton.addEventListener('change', handleLogToggle);
 // Handle window resize to make Plotly chart responsive
 window.addEventListener('resize', () => {
     Plotly.Plots.resize(plotDiv);
+});
+
+
+// Function to write a constant TX power value to the write_characteristic
+async function setTxPower(value) {
+    if (!write_characteristic) {
+        updateStatus('No write_characteristic available for writing.', true);
+        return;
+    }
+
+    try {
+        // Convert the TX power value to a Uint8Array
+        const txPowerValue = new Uint8Array([value]);
+
+        // Write the value to the write_characteristic
+        await write_characteristic.writeValue(txPowerValue);
+
+        updateStatus(`TX Power set to ${value} dBm`);
+        console.log(`TX Power successfully set to ${value} dBm`);
+    } catch (error) {
+        console.error('Error writing TX Power:', error);
+        updateStatus(`Error setting TX Power: ${error.message}`, true);
+    }
+}
+
+const txPowersSelect = document.getElementById('txPowers');
+const deviceSetTxPowerSpan = document.getElementById('deviceSetTxPower');
+const deviceActualTxPowerSpan = document.getElementById('deviceActualTxPower');
+
+txPowersSelect.addEventListener('change', function() {
+    const selectedValue = this.value;
+    const selectedText = this.options[this.selectedIndex].text;
+    if (connectedDevice && connectedDevice.gatt.connected) {
+        deviceSetTxPowerSpan.textContent = selectedText;
+        setTxPower(selectedValue);
+    }
 });

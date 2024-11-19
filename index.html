@@ -18,17 +18,51 @@
     <div id="controls">
         <button id="scanButton" aria-label="Scan for MIDAS Bluetooth Devices"><i class="fas fa-search"></i> Scan</button>
         <button id="disconnectButton" aria-label="Disconnect from Bluetooth Device" disabled><i class="fas fa-times-circle"></i> Disconnect</button>
-        <!-- Replace Download Button with Log Checkbox -->
+        <!-- Combo Box Added Here -->
+        <div class="control-item">
+            <label for="txPowers">Select TX Power:</label>
+            <select id="txPowers" name="txPowers" class="combo-box">
+                <option value="">--Select TX Power--</option>
+                <option value="-40">-40 dBm</option>
+                <option value="-20">-20 dBm</option>
+                <option value="0">0 dBm</option>
+                <option value="4">4 dBm</option>
+                <option value="8">8 dBm</option>
+                <option value="12">12 dBm</option>
+                <option value="13">13 dBm</option>
+                <option value="14">14 dBm</option>
+                <option value="15">15 dBm</option>
+                <option value="16">16 dBm</option>
+                <option value="17">17 dBm</option>
+                <option value="18">18 dBm</option>
+                <option value="19">19 dBm</option>
+                <option value="20">20 dBm</option>
+                <!-- Add more options as needed -->
+            </select>
+        </div>
+        <!-- Combo Box Added Here -->
         <label class="checkbox-container">
             <input type="checkbox" id="logButton" aria-label="Log RSSI Data">
             <span class="checkmark"></span>
             <span>Log RSSI Data</span>
         </label>
+        
+
     </div>
     <!-- New Device Information Section -->
     <div id="deviceInfo">
-        <p><strong>Device Name:</strong> <span id="deviceName">N/A</span></p>
-        <p><strong>Device Version:</strong> <span id="deviceVersion">N/A</span></p>
+        <div class="device-item">
+            <strong>Device Name:</strong> <span id="deviceName">N/A</span>
+        </div>
+        <div class="device-item">
+            <strong>Device Version:</strong> <span id="deviceVersion">N/A</span>
+        </div>
+        <div class="device-item">
+            <strong>Device Set TX Power:</strong> <span id="deviceSetTxPower">N/A</span>
+        </div>
+        <div class="device-item">
+            <strong>Device Actual TX Power:</strong> <span id="deviceActualTxPower">N/A</span>
+        </div>
     </div>
     <div id="status"></div>
     <div id="status"></div>
