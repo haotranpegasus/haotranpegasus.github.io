@@ -453,3 +453,17 @@ txPowersSelect.addEventListener('change', function() {
         setTxPower(selectedValue);
     }
 });
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const testButton = document.getElementById('testButton')
+testButton.addEventListener('click',async function(){
+    for (let i = -20; i < 20; i++) {
+        setTxPower(i);
+        deviceSetTxPowerSpan.textContent = `${i} dBm`;
+        await sleep(1500); // Waits for 1000ms (1 second) before the next iteration
+      }
+});
+
