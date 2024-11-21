@@ -460,10 +460,15 @@ function sleep(ms) {
 
 const testButton = document.getElementById('testButton')
 testButton.addEventListener('click',async function(){
-    for (let i = -20; i < 20; i++) {
-        setTxPower(i);
-        deviceSetTxPowerSpan.textContent = `${i} dBm`;
-        await sleep(1500); // Waits for 1000ms (1 second) before the next iteration
-      }
+    for (let i = 20; i > -20; i--) {
+        if (connectedDevice && connectedDevice.gatt.connected) {
+            setTxPower(i);
+            deviceSetTxPowerSpan.textContent = `${i} dBm`;
+            await sleep(1500); // Waits for 1000ms (1 second) before the next iteration
+        }else{
+            deviceSetTxPowerSpan.textContent = `N/A dBm`;
+            break;
+        }
+    }
 });
 
