@@ -8,6 +8,7 @@ const deviceVersionSpan = document.getElementById('deviceVersion');
 let connectedDevice = null;
 let characteristic = null;
 let write_characteristic = null;
+let isLogging = false;
 
 // Define the service and characteristic UUIDs
 const MIDAS_SERVICE_UUID = '480b1ce0-92ab-485a-af98-80d6727becf1';
@@ -16,163 +17,86 @@ const MIDAS_WRITE_CHARACTERISTIC_UUID = '480b1ce1-92ab-485a-af98-80d6727becf5';
 
 // Initialize Plotly chart with dark theme settings
 const plotDiv = document.getElementById('plot');
-const initialData = [{
-    x: [],
-    y: [],
-    mode: 'lines',
-    name: 'RSSI (dBm)',
-    line: { color: '#bb86fc', shape: 'spline' } // Smooth lines
-}];
+const initialData = [
+    {
+        x: [],
+        y: [],
+        mode: 'lines',
+        name: 'RSSI (dBm)',
+        line: {color: '#bb86fc', shape: 'spline'}, // Smooth lines
+    },
+];
 
 const initialLayout = {
     title: {
         text: 'Live RSSI Values',
-        font: { color: '#ffffff', size: 20 }
+        font: {color: '#ffffff', size: 20},
     },
     xaxis: {
         title: {
             text: 'Time',
-            font: { color: '#ffffff', size: 16 }
+            font: {color: '#ffffff', size: 16},
         },
         type: 'date',
         range: [new Date(Date.now() - 60000), new Date()], // Last 60 seconds
         color: '#ffffff',
         gridcolor: '#333333',
-        zerolinecolor: '#ffffff'
+        zerolinecolor: '#ffffff',
     },
     yaxis: {
         title: {
             text: 'RSSI (dBm)',
-            font: { color: '#ffffff', size: 16 }
+            font: {color: '#ffffff', size: 16},
         },
         range: [-100, 0],
         color: '#ffffff',
         gridcolor: '#333333',
-        zerolinecolor: '#ffffff'
+        zerolinecolor: '#ffffff',
     },
     plot_bgcolor: '#1e1e1e',
     paper_bgcolor: '#121212',
     font: {
-        color: '#ffffff'
+        color: '#ffffff',
     },
     legend: {
-        font: { color: '#ffffff' }
+        font: {color: '#ffffff'},
     },
 };
 
 // Responsive Plotly configuration
 const config = {
     responsive: true,
-    displayModeBar: false // Hides the toolbar for a cleaner look
+    displayModeBar: false, // Hides the toolbar for a cleaner look
 };
 
 Plotly.newPlot(plotDiv, initialData, initialLayout, config);
 
-// Initialize variables for logging
-let fileHandle = null;
-let writableStream = null;
-let isLogging = false;
-
-// Function to request file creation or selection
-async function getFileHandle() {
-    try {
-        const options = {
-            types: [{
-                description: 'CSV Files',
-                accept: {
-                    'text/csv': ['.csv']
-                }
-            }],
-            suggestedName: `LOG_${new Date().toISOString().replace(/[:.]/g, '-')}.csv`,
-            excludeAcceptAllOption: true,
-            multiple: false
-        };
-        // Prompt user to create or overwrite a file
-        const handle = await window.showSaveFilePicker(options);
-        return handle;
-    } catch (error) {
-        console.error('File selection cancelled or failed:', error);
-        updateStatus('File selection cancelled.', true);
-        logButton.checked = false; // Uncheck the checkbox if file selection fails
-        return null;
-    }
-}
-
-
-// Function to initialize logging
-async function startLogging() {
-    if (!('showSaveFilePicker' in window)) {
-        alert('File System Access API is not supported in this browser.');
-        logButton.checked = false;
-        return;
-    }
-
-    fileHandle = await getFileHandle();
-    if (!fileHandle) return;
-
-    try {
-        writableStream = await fileHandle.createWritable();
-        // Write CSV headers
-        await writableStream.write('Timestamp,RSSI (dBm)\n');
-        isLogging = true;
-        updateStatus('Logging RSSI data...');
-    } catch (error) {
-        console.error('Error initializing writable stream:', error);
-        updateStatus('Error initializing file for logging.', true);
-        logButton.checked = false;
-    }
-}
-
-// Function to stop logging
-async function stopLogging() {
-    if (writableStream) {
-        try {
-            await writableStream.close();
-            updateStatus('Logging stopped and file saved.');
-        } catch (error) {
-            console.error('Error closing writable stream:', error);
-            updateStatus('Error saving the log file.', true);
-        }
-    }
-    isLogging = false;
-    fileHandle = null;
-    writableStream = null;
-}
-
-// Function to append data to the CSV file
-async function appendToCSV(timestamp, rssi) {
-    if (!writableStream) return;
-    const line = `${timestamp.toISOString()},${rssi}\n`;
-    try {
-        await writableStream.write(line);
-    } catch (error) {
-        console.error('Error writing to CSV:', error);
-        updateStatus('Error writing data to the log file.', true);
-    }
-}
-
 // Function to initialize Plotly chart
 function initializePlot() {
-    const data = [{
-        x: [],
-        y: [],
-        mode: 'lines',
-        name: 'RSSI (dBm)',
-        line: { color: '#bb86fc', shape: 'spline' } // Smooth lines
-    }];
+    const data = [
+        {
+            x: [],
+            y: [],
+            mode: 'lines',
+            name: 'RSSI (dBm)',
+            line: {color: '#bb86fc', shape: 'spline'}, // Smooth lines
+        },
+    ];
     Plotly.newPlot(plotDiv, data, initialLayout, config);
 }
 
 // Function to reset the Plotly chart using Plotly.react
 function resetPlot() {
-    const freshData = [{
-        x: [],
-        y: [],
-        mode: 'lines',
-        name: 'RSSI (dBm)',
-        line: { color: '#bb86fc', shape: 'spline' } // Smooth lines
-    }];
-    
+    const freshData = [
+        {
+            x: [],
+            y: [],
+            mode: 'lines',
+            name: 'RSSI (dBm)',
+            line: {color: '#bb86fc', shape: 'spline'}, // Smooth lines
+        },
+    ];
+
     Plotly.react(plotDiv, freshData, initialLayout, config)
         .then(() => {
             console.log('Plot successfully reset.');
@@ -192,16 +116,126 @@ function updatePlot(rssi) {
 
     const currentTime = new Date();
 
-    Plotly.extendTraces(plotDiv, {
-        x: [[currentTime]],
-        y: [[rssi]]
-    }, [0]);
+    Plotly.extendTraces(
+        plotDiv,
+        {
+            x: [[currentTime]],
+            y: [[rssi]],
+        },
+        [0],
+    );
 
     // Update the x-axis range to show the last 60 seconds
     Plotly.relayout(plotDiv, {
         'xaxis.range[0]': new Date(currentTime.getTime() - 60000),
-        'xaxis.range[1]': currentTime
+        'xaxis.range[1]': currentTime,
     });
+}
+
+// Initialize IndexedDB
+function openDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('RSSILogDB', 1);
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains('logs')) {
+                db.createObjectStore('logs', {
+                    keyPath: 'id',
+                    autoIncrement: true,
+                });
+            }
+        };
+        request.onsuccess = (event) => resolve(event.target.result);
+        request.onerror = (event) => reject(event.target.error);
+    });
+}
+
+// Save log data to IndexedDB
+async function saveLog(timestamp, rssi, actualTxPower) {
+    try {
+        const db = await openDatabase();
+        const transaction = db.transaction('logs', 'readwrite');
+        const store = transaction.objectStore('logs');
+        store.add({timestamp, rssi, actualTxPower});
+        transaction.oncomplete = () => console.log('Log saved.');
+        transaction.onerror = (event) =>
+            console.error('Error saving log:', event.target.error);
+    } catch (error) {
+        console.error('Failed to save log:', error);
+        updateStatus('Error saving log data.', true);
+    }
+}
+
+// Retrieve all logs and export as CSV
+async function exportLogs() {
+    try {
+        const db = await openDatabase();
+        const transaction = db.transaction('logs', 'readonly');
+        const store = transaction.objectStore('logs');
+        const logs = [];
+
+        return new Promise((resolve, reject) => {
+            const request = store.openCursor();
+            request.onsuccess = (event) => {
+                const cursor = event.target.result;
+                if (cursor) {
+                    logs.push(cursor.value);
+                    cursor.continue();
+                } else {
+                    // All logs retrieved, now convert to CSV
+                    let csvContent =
+                        'Timestamp,RSSI (dBm),Actual TX Power (dBm)\n';
+                    logs.forEach((log) => {
+                        csvContent += `${new Date(
+                            log.timestamp,
+                        ).toISOString()},${log.rssi},${log.actualTxPower}\n`;
+                    });
+                    resolve(csvContent);
+                }
+            };
+            request.onerror = (event) => reject(event.target.error);
+        });
+    } catch (error) {
+        console.error('Failed to export logs:', error);
+        updateStatus('Error exporting log data.', true);
+    }
+}
+
+// Download logs as CSV
+async function downloadLogsAsCSV() {
+    try {
+        const csvContent = await exportLogs();
+        const blob = new Blob([csvContent], {type: 'text/csv'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `LOG_${new Date()
+            .toISOString()
+            .replace(/[:.]/g, '-')}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Error downloading logs:', error);
+        updateStatus('Error downloading log data.', true);
+    }
+}
+
+// Clear all logs from IndexedDB
+async function clearLogs() {
+    try {
+        const db = await openDatabase();
+        const transaction = db.transaction('logs', 'readwrite');
+        const store = transaction.objectStore('logs');
+        store.clear();
+        transaction.oncomplete = () => console.log('All logs cleared.');
+        transaction.onerror = (event) =>
+            console.error('Error clearing logs:', event.target.error);
+    } catch (error) {
+        console.error('Failed to clear logs:', error);
+        updateStatus('Error clearing log data.', true);
+    }
 }
 
 // Function to update status messages
@@ -224,26 +258,31 @@ async function scanForDevices() {
 
         const options = {
             acceptAllDevices: false,
-            filters: [{
-                namePrefix: 'MIDAS'
-            }],
-            optionalServices: [MIDAS_SERVICE_UUID]
+            filters: [
+                {
+                    namePrefix: 'MIDAS',
+                },
+            ],
+            optionalServices: [MIDAS_SERVICE_UUID],
         };
 
         // Request device
         const device = await navigator.bluetooth.requestDevice(options);
         handleDevice(device);
-
     } catch (error) {
         scanButton.disabled = false; // Re-enable scan button on error
         if (error.name === 'NotFoundError') {
             console.warn('No device selected. Scan was cancelled.');
             updateStatus('No device selected. Please scan again.', true);
-            alert('No device selected. Please initiate the scan again to connect to a MIDAS device.');
+            alert(
+                'No device selected. Please initiate the scan again to connect to a MIDAS device.',
+            );
         } else {
             console.error('Error during Bluetooth scan:', error);
             updateStatus(`Error during scan: ${error.message}`, true);
-            alert('An error occurred during the Bluetooth scan. Please try again.');
+            alert(
+                'An error occurred during the Bluetooth scan. Please try again.',
+            );
         }
     }
 }
@@ -251,7 +290,7 @@ async function scanForDevices() {
 // Function to extract Device Name and Version from the full device name
 function extractDeviceInfo(fullName) {
     if (!fullName) {
-        return { name: 'Unknown', version: 'Unknown' };
+        return {name: 'Unknown', version: 'Unknown'};
     }
 
     const parts = fullName.split('_');
@@ -266,18 +305,19 @@ function extractDeviceInfo(fullName) {
         const versionParts = rawVersion.split('.');
 
         // Remove leading zeros from each part of the version
-        const formattedVersion = versionParts.map(part => {
-            // Convert to integer to remove leading zeros, then back to string
-            const num = parseInt(part, 10);
-            return isNaN(num) ? part : num.toString();
-        }).join('.');
+        const formattedVersion = versionParts
+            .map((part) => {
+                // Convert to integer to remove leading zeros, then back to string
+                const num = parseInt(part, 10);
+                return isNaN(num) ? part : num.toString();
+            })
+            .join('.');
 
         deviceVersion = formattedVersion;
     }
 
-    return { name: deviceName, version: deviceVersion };
+    return {name: deviceName, version: deviceVersion};
 }
-
 
 // Function to connect to a selected device and start RSSI monitoring
 async function connectToDevice(device) {
@@ -300,43 +340,65 @@ async function connectToDevice(device) {
         characteristics.forEach((characteristic, index) => {
             console.log(`\nCharacteristic ${index + 1}:`);
             console.log(`  UUID: ${characteristic.uuid}`);
-            console.log(`  Properties: ${Object.keys(characteristic.properties).filter(prop => characteristic.properties[prop]).join(', ')}`);
+            console.log(
+                `  Properties: ${Object.keys(characteristic.properties)
+                    .filter((prop) => characteristic.properties[prop])
+                    .join(', ')}`,
+            );
         });
 
         // Get the characteristic
-        characteristic = await service.getCharacteristic(MIDAS_CHARACTERISTIC_UUID);
-        
+        characteristic = await service.getCharacteristic(
+            MIDAS_CHARACTERISTIC_UUID,
+        );
+
         //Get the write characteristic
-        write_characteristic = await service.getCharacteristic(MIDAS_WRITE_CHARACTERISTIC_UUID);
+        write_characteristic = await service.getCharacteristic(
+            MIDAS_WRITE_CHARACTERISTIC_UUID,
+        );
 
         // Remove existing event listener to prevent duplication
-        characteristic.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
-        
+        characteristic.removeEventListener(
+            'characteristicvaluechanged',
+            handleCharacteristicValueChanged,
+        );
+
         // Start notifications if the characteristic supports it
         if (characteristic.properties.notify) {
             await characteristic.startNotifications();
-            characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
+            characteristic.addEventListener(
+                'characteristicvaluechanged',
+                handleCharacteristicValueChanged,
+            );
             updateStatus('Receiving RSSI data...');
         } else {
             console.warn('Characteristic does not support notifications.');
-            updateStatus('Characteristic does not support notifications.', true);
-            alert('The selected device does not support notifications for the required characteristic.');
+            updateStatus(
+                'Characteristic does not support notifications.',
+                true,
+            );
+            alert(
+                'The selected device does not support notifications for the required characteristic.',
+            );
             disconnectButton.disabled = true;
             scanButton.disabled = false;
             return;
         }
         // Extract Device Name and Version
-        const { name: deviceName, version: deviceVersion } = extractDeviceInfo(device.name);
+        const {name: deviceName, version: deviceVersion} = extractDeviceInfo(
+            device.name,
+        );
         // Set Device Name and Version in HTML
         deviceNameSpan.textContent = deviceName;
         deviceVersionSpan.textContent = deviceVersion;
         // Enable the disconnect button
         disconnectButton.disabled = false;
-
     } catch (error) {
         console.error('Error connecting to device:', error);
         updateStatus(`Error connecting to device: ${error.message}`, true);
-        alert('An error occurred while connecting to the device. Please try again.');
+        alert(
+            'An error occurred while connecting to the device. Please try again.',
+        );
         scanButton.disabled = false;
     }
 }
@@ -363,16 +425,13 @@ async function handleCharacteristicValueChanged(event) {
     rssi = rssi > 127 ? rssi - 256 : rssi;
 
     const currentTime = new Date();
-    // console.log(`Received RSSI: ${rssi} dBm at ${currentTime.toLocaleTimeString()}`);
 
-    // Append to CSV if logging is active
-    if (isLogging && writableStream) {
-        await appendToCSV(currentTime, rssi);
+    if (isLogging) {
+        saveLog(currentTime, rssi, tx_power);
     }
 
     // Update the Plotly chart with the RSSI value
     updatePlot(rssi);
-    updateStatus(`RSSI: ${rssi} dBm`);
 }
 
 // Function to disconnect from the device and stop RSSI monitoring
@@ -389,23 +448,17 @@ async function disconnectDevice() {
     characteristic = null;
     scanButton.disabled = false;
     disconnectButton.disabled = true;
-
-    // If logging was active, stop logging
-    if (isLogging) {
-        await stopLogging();
-        logButton.checked = false; // Uncheck the checkbox
-    }
 }
 
 // Function to handle logging toggle
 async function handleLogToggle() {
-    if (logButton.checked) {
-        // Start logging
-        await startLogging();
-    } else {
-        // Stop logging
-        await stopLogging();
-    }
+    // if (logButton.checked) {
+    //     // Start logging
+    //     await startLogging();
+    // } else {
+    //     // Stop logging
+    //     await stopLogging();
+    // }
 }
 
 // Add event listeners to the scan, disconnect, and log checkbox
@@ -417,7 +470,6 @@ logButton.addEventListener('change', handleLogToggle);
 window.addEventListener('resize', () => {
     Plotly.Plots.resize(plotDiv);
 });
-
 
 // Function to write a constant TX power value to the write_characteristic
 async function setTxPower(value) {
@@ -445,7 +497,7 @@ const txPowersSelect = document.getElementById('txPowers');
 const deviceSetTxPowerSpan = document.getElementById('deviceSetTxPower');
 const deviceActualTxPowerSpan = document.getElementById('deviceActualTxPower');
 
-txPowersSelect.addEventListener('change', function() {
+txPowersSelect.addEventListener('change', function () {
     const selectedValue = this.value;
     const selectedText = this.options[this.selectedIndex].text;
     if (connectedDevice && connectedDevice.gatt.connected) {
@@ -455,20 +507,24 @@ txPowersSelect.addEventListener('change', function() {
 });
 
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const testButton = document.getElementById('testButton')
-testButton.addEventListener('click',async function(){
+const testButton = document.getElementById('testButton');
+testButton.addEventListener('click', async function () {
+    isLogging = true;
     for (let i = 20; i > -20; i--) {
         if (connectedDevice && connectedDevice.gatt.connected) {
             setTxPower(i);
             deviceSetTxPowerSpan.textContent = `${i} dBm`;
             await sleep(1500); // Waits for 1000ms (1 second) before the next iteration
-        }else{
+        } else {
             deviceSetTxPowerSpan.textContent = `N/A dBm`;
             break;
         }
     }
+    isLogging = false;
+    await downloadLogsAsCSV(); // Download the logs when logging stops
+    updateStatus('Logging stopped and file downloaded.');
+    await clearLogs(); // Clear logs after download (optional)
 });
-
