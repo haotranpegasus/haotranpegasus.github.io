@@ -205,27 +205,21 @@ async function downloadLogsAsCSV() {
     try {
         updateStatus('Stage 1: Starting log export', false);
 
-        // Export logs
+        // Get the CSV content
         const csvContent = await exportLogs();
         updateStatus('Stage 2: Log export completed', false);
 
-        // Compose the mailto link
-        const subject = encodeURIComponent('BLE Data Logs');
-        const body = encodeURIComponent(
-            'Please find the data logs below:\n\n' + csvContent,
-        );
+        // Create a Data URL
+        const encodedUri =
+            'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
+        updateStatus('Stage 3: Data URL created', false);
 
-        // Create the mailto link
-        const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
-        updateStatus('Stage 3: Email link generated', false);
-
-        // Open the email client
-        window.location.href = mailtoLink;
-
-        updateStatus('Stage 4: Email client opened', false);
+        // Open the Data URL in a new tab
+        window.open(encodedUri, '_blank');
+        updateStatus('Stage 4: CSV opened in a new tab', false);
     } catch (error) {
-        console.error('Error preparing email with logs:', error);
-        updateStatus('Error preparing email with log data.', true);
+        console.error('Error opening logs:', error);
+        updateStatus('Error opening logs in a new tab.', true);
     }
 }
 
