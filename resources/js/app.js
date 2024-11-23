@@ -204,14 +204,19 @@ async function exportLogs() {
 // Download logs as CSV
 async function downloadLogsAsCSV() {
     try {
+        updateStatus('Stage 1', false);
         const csvContent = await exportLogs();
+        updateStatus('Stage 2', false);
         const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+        updateStatus('Stage 3', false);
         const url = URL.createObjectURL(blob);
+        updateStatus('Stage 4', false);
 
         // Create a hidden iframe to trigger the download
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
         iframe.src = url;
+        updateStatus('Stage 5', false);
 
         document.body.appendChild(iframe);
 
