@@ -209,27 +209,37 @@ async function downloadLogsAsCSV() {
         const csvContent = await exportLogs();
         updateStatus('Stage 2: Log export completed', false);
 
-        // Create a downloadable link
-        const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
-        const url = URL.createObjectURL(blob);
+        // Encode the CSV content to fit in a QR code
+        if (csvContent.length > 3000) {
+            throw new Error(
+                'CSV content is too large for a QR code. Please use a different method.',
+            );
+        }
 
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `LOG_${new Date()
-            .toISOString()
-            .replace(/[:.]/g, '-')}.csv`;
-        link.textContent = 'Download CSV File';
-        link.style = 'display: block; margin: 10px;';
+        // Create a container for the QR code
+        const qrCodeContainer = document.getElementById('qrcode');
+        qrCodeContainer.innerHTML = ''; // Clear any existing QR code
 
-        document.body.appendChild(link);
-
-        updateStatus(
-            'Download link generated. Click to download the file.',
-            false,
+        // Generate the QR code
+        QRCode.toCanvas(
+            qrCodeContainer,
+            csvContent,
+            {width: 256},
+            function (error) {
+                if (error) {
+                    console.error('Error generating QR code:', error);
+                    updateStatus('Error generating QR code.', true);
+                } else {
+                    updateStatus('QR code generated successfully.', false);
+                    alert(
+                        'QR code generated! Scan it with another device to retrieve the data.',
+                    );
+                }
+            },
         );
     } catch (error) {
-        console.error('Error creating download link:', error);
-        updateStatus('Error creating download link.', true);
+        console.error('Error generating QR code:', error);
+        alert('Failed to generate QR code. Check console for details.');
     }
 }
 
