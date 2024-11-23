@@ -205,17 +205,22 @@ async function exportLogs() {
 async function downloadLogsAsCSV() {
     try {
         const csvContent = await exportLogs();
-        const encodedUri =
-            'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
-        const a = document.createElement('a');
-        a.href = encodedUri;
-        a.target = '_blank'; // Ensures compatibility on iOS
-        a.download = `LOG_${new Date()
-            .toISOString()
-            .replace(/[:.]/g, '-')}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+        const url = URL.createObjectURL(blob);
+
+        // Create a hidden iframe to trigger the download
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = url;
+
+        document.body.appendChild(iframe);
+
+        // Cleanup after a short delay
+        setTimeout(() => {
+            document.body.removeChild(iframe);
+            URL.revokeObjectURL(url);
+        }, 1000);
+        updateStatus('Sucesfully downloaded', false);
     } catch (error) {
         console.error('Error downloading logs:', error);
         updateStatus('Error downloading log data.', true);
