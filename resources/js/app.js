@@ -481,12 +481,8 @@ async function setTxPower(value) {
     try {
         // Convert the TX power value to a Uint8Array
         const txPowerValue = new Uint8Array([value]);
-
         // Write the value to the write_characteristic
         await write_characteristic.writeValue(txPowerValue);
-
-        updateStatus(`TX Power set to ${value} dBm`);
-        console.log(`TX Power successfully set to ${value} dBm`);
     } catch (error) {
         console.error('Error writing TX Power:', error);
         updateStatus(`Error setting TX Power: ${error.message}`, true);
@@ -513,7 +509,8 @@ function sleep(ms) {
 const testButton = document.getElementById('testButton');
 testButton.addEventListener('click', async function () {
     isLogging = true;
-    for (let i = 20; i > -20; i--) {
+    updateStatus('Start Logging');
+    for (let i = 1; i > -1; i--) {
         if (connectedDevice && connectedDevice.gatt.connected) {
             setTxPower(i);
             deviceSetTxPowerSpan.textContent = `${i} dBm`;
@@ -525,6 +522,5 @@ testButton.addEventListener('click', async function () {
     }
     isLogging = false;
     await downloadLogsAsCSV(); // Download the logs when logging stops
-    updateStatus('Logging stopped and file downloaded.');
     await clearLogs(); // Clear logs after download (optional)
 });
