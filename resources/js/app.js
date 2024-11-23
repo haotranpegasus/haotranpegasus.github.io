@@ -203,23 +203,16 @@ async function exportLogs() {
 
 // Download logs as CSV
 async function downloadLogsAsCSV() {
-    try {
-        const csvContent = await exportLogs();
-        const blob = new Blob([csvContent], {type: 'text/csv'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `LOG_${new Date()
-            .toISOString()
-            .replace(/[:.]/g, '-')}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    } catch (error) {
-        console.error('Error downloading logs:', error);
-        updateStatus('Error downloading log data.', true);
-    }
+    const csvContent = await exportLogs();
+    const dataUrl = `data:text/csv;charset=utf-8,${encodeURIComponent(
+        csvContent,
+    )}`;
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = `LOG_${new Date().toISOString().replace(/[:.]/g, '-')}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 
 // Clear all logs from IndexedDB
