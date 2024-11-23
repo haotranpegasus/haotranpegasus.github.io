@@ -203,16 +203,23 @@ async function exportLogs() {
 
 // Download logs as CSV
 async function downloadLogsAsCSV() {
-    const csvContent = await exportLogs();
-    const dataUrl = `data:text/csv;charset=utf-8,${encodeURIComponent(
-        csvContent,
-    )}`;
-    const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = `LOG_${new Date().toISOString().replace(/[:.]/g, '-')}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    try {
+        const csvContent = await exportLogs();
+        const encodedUri =
+            'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
+        const a = document.createElement('a');
+        a.href = encodedUri;
+        a.target = '_blank'; // Ensures compatibility on iOS
+        a.download = `LOG_${new Date()
+            .toISOString()
+            .replace(/[:.]/g, '-')}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } catch (error) {
+        console.error('Error downloading logs:', error);
+        updateStatus('Error downloading log data.', true);
+    }
 }
 
 // Clear all logs from IndexedDB
