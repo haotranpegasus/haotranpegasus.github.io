@@ -201,31 +201,33 @@ async function exportLogs() {
     }
 }
 
-// Download logs as CSV
 async function downloadLogsAsCSV() {
     try {
-        updateStatus('Stage 1', false);
+        updateStatus('Stage 1: Starting log export', false);
+
+        // Export logs
         const csvContent = await exportLogs();
-        updateStatus('Stage 2', false);
-        const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
-        updateStatus('Stage 3', false);
-        const url = URL.createObjectURL(blob);
-        updateStatus('Stage 4', false);
+        updateStatus('Stage 2: Log export completed', false);
 
-        // Create a hidden iframe to trigger the download
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = url;
-        updateStatus('Stage 5', false);
+        // Convert CSV content to Data URI format
+        const encodedUri =
+            'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
+        updateStatus('Stage 3: Data URI generated', false);
 
-        document.body.appendChild(iframe);
+        // Create a hidden <a> element for the download
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = encodedUri;
+        a.download = `LOG_${new Date()
+            .toISOString()
+            .replace(/[:.]/g, '-')}.csv`;
+        updateStatus('Stage 4: Download element created', false);
 
-        // Cleanup after a short delay
-        setTimeout(() => {
-            document.body.removeChild(iframe);
-            URL.revokeObjectURL(url);
-        }, 1000);
-        updateStatus('Sucesfully downloaded', false);
+        // Append <a> to the document and trigger the download
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        updateStatus('Stage 5: Download triggered and completed', false);
     } catch (error) {
         console.error('Error downloading logs:', error);
         updateStatus('Error downloading log data.', true);
