@@ -209,39 +209,27 @@ async function downloadLogsAsCSV() {
         const csvContent = await exportLogs();
         updateStatus('Stage 2: Log export completed', false);
 
-        // Create an HTML page with the CSV content
-        const htmlContent = `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>CSV Logs</title>
-            </head>
-            <body>
-                <h1>CSV Logs</h1>
-                <textarea style="width: 100%; height: 90vh;" readonly>${csvContent}</textarea>
-            </body>
-            </html>
-        `;
+        // Create a downloadable link
+        const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+        const url = URL.createObjectURL(blob);
 
-        // Open the HTML page in a new tab
-        const newWindow = window.open();
-        if (newWindow) {
-            newWindow.document.write(htmlContent);
-            newWindow.document.close();
-            updateStatus(
-                'Stage 3: Logs opened in a new tab as an HTML page',
-                false,
-            );
-        } else {
-            throw new Error(
-                'Failed to open a new tab. Check popup blocker settings.',
-            );
-        }
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `LOG_${new Date()
+            .toISOString()
+            .replace(/[:.]/g, '-')}.csv`;
+        link.textContent = 'Download CSV File';
+        link.style = 'display: block; margin: 10px;';
+
+        document.body.appendChild(link);
+
+        updateStatus(
+            'Download link generated. Click to download the file.',
+            false,
+        );
     } catch (error) {
-        console.error('Error opening logs as HTML:', error);
-        updateStatus('Error opening logs as an HTML page.', true);
+        console.error('Error creating download link:', error);
+        updateStatus('Error creating download link.', true);
     }
 }
 
