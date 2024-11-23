@@ -209,17 +209,39 @@ async function downloadLogsAsCSV() {
         const csvContent = await exportLogs();
         updateStatus('Stage 2: Log export completed', false);
 
-        // Create a Data URL
-        const encodedUri =
-            'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
-        updateStatus('Stage 3: Data URL created', false);
+        // Create an HTML page with the CSV content
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>CSV Logs</title>
+            </head>
+            <body>
+                <h1>CSV Logs</h1>
+                <textarea style="width: 100%; height: 90vh;" readonly>${csvContent}</textarea>
+            </body>
+            </html>
+        `;
 
-        // Open the Data URL in a new tab
-        window.open(encodedUri, '_blank');
-        updateStatus('Stage 4: CSV opened in a new tab', false);
+        // Open the HTML page in a new tab
+        const newWindow = window.open();
+        if (newWindow) {
+            newWindow.document.write(htmlContent);
+            newWindow.document.close();
+            updateStatus(
+                'Stage 3: Logs opened in a new tab as an HTML page',
+                false,
+            );
+        } else {
+            throw new Error(
+                'Failed to open a new tab. Check popup blocker settings.',
+            );
+        }
     } catch (error) {
-        console.error('Error opening logs:', error);
-        updateStatus('Error opening logs in a new tab.', true);
+        console.error('Error opening logs as HTML:', error);
+        updateStatus('Error opening logs as an HTML page.', true);
     }
 }
 
