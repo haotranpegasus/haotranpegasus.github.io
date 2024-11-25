@@ -5,17 +5,23 @@ const statusDiv = document.getElementById('status');
 const deviceNameSpan = document.getElementById('deviceName');
 const deviceVersionSpan = document.getElementById('deviceVersion');
 const deviceRssi = document.getElementById('deviceRSSI');
+const deviceStatus = document.getElementById('deviceStatus')
 
 const txPowersSelect = document.getElementById('txPowers');
 const deviceSetTxPowerSpan = document.getElementById('deviceSetTxPower');
 const deviceActualTxPowerSpan = document.getElementById('deviceActualTxPower');
 const testButton = document.getElementById('testButton');
 
-let currentSetTxPower = null;
 let connectedDevice = null;
 let characteristic = null;
 let write_characteristic = null;
 let isLogging = false;
+
+const INFO = 0;
+const CONNECT = 1;
+const DISCONNECT = 2;
+const TEST = 3;
+const ERROR = 4;
 
 // Define the service and characteristic UUIDs
 const MIDAS_SERVICE_UUID = '480b1ce0-92ab-485a-af98-80d6727becf1';
@@ -114,7 +120,7 @@ function resetPlot() {
         })
         .catch((error) => {
             console.error('Error resetting the plot:', error);
-            updateStatus('Error resetting the plot.', true);
+            updateStatus('Error resetting the plot.', ERROR);
         });
 }
 
@@ -162,18 +168,18 @@ function openDatabase() {
 }
 
 // Save log data to IndexedDB
-async function saveLog(timestamp, rssi, actualTxPower, setTxPower) {
+async function saveLog(timestamp, rssi, actualTxPower) {
     try {
         const db = await openDatabase();
         const transaction = db.transaction('logs', 'readwrite');
         const store = transaction.objectStore('logs');
-        store.add({timestamp, rssi, actualTxPower, setTxPower});
+        store.add({timestamp, rssi, actualTxPower});
         transaction.oncomplete = () => console.log('Log saved.');
         transaction.onerror = (event) =>
             console.error('Error saving log:', event.target.error);
     } catch (error) {
         console.error('Failed to save log:', error);
-        updateStatus('Error saving log data.', true);
+        updateStatus('Error saving log data.', ERROR);
     }
 }
 
@@ -213,15 +219,13 @@ async function exportLogs(pointName) {
 
                     // Add headers for the log data
                     csvContent +=
-                        'Timestamp,RSSI (dBm),Actual TX Power (dBm), Set TX Power (dBm)\n';
+                        'Timestamp,RSSI (dBm),Actual TX Power (dBm)\n';
 
                     // Add the log data
                     logs.forEach((log) => {
                         csvContent += `${new Date(
                             log.timestamp,
-                        ).toISOString()},${log.rssi},${log.actualTxPower},${
-                            log.setTxPower
-                        }\n`;
+                        ).toISOString()},${log.rssi},${log.actualTxPower}\n`;
                     });
 
                     resolve(csvContent);
@@ -231,28 +235,20 @@ async function exportLogs(pointName) {
         });
     } catch (error) {
         console.error('Failed to export logs:', error);
-        updateStatus('Error exporting log data.', true);
+        updateStatus('Error exporting log data.', ERROR);
     }
 }
 
 async function downloadLogsAsCSV(pointName) {
     try {
-        updateStatus('Stage 1: Starting log export', false);
-
         // Get the CSV content
         const csvContent = await exportLogs(pointName);
-        updateStatus('Stage 2: Log export completed', false);
-
         // Display the data in a scrollable container
         displayData(csvContent);
-        updateStatus('Stage 3: Data displayed', false);
-
         // Add copy button functionality
         createCopyButton(csvContent);
-        updateStatus('Stage 4: Copy button added', false);
     } catch (error) {
-        console.error('Error displaying data:', error);
-        updateStatus('Error displaying data.', true);
+        updateStatus('Error displaying data.', ERROR);
     }
 }
 
@@ -298,7 +294,6 @@ function clearDisplay() {
 
     dataList.innerHTML = ''; // Clear the list content
     copyButton.style.display = 'none'; // Hide the copy button
-    updateStatus('Display cleared', false);
 }
 
 // Clear all logs from IndexedDB
@@ -318,9 +313,31 @@ async function clearLogs() {
 }
 
 // Function to update status messages
-function updateStatus(message, isError = false) {
-    // statusDiv.textContent = message;
-    // statusDiv.style.color = isError ? '#cf6679' : '#03dac6'; // Red for errors, Teal for info
+function updateStatus(message, type = INFO) {
+    deviceStatus.textContent = message;
+    let informationColor = null
+    
+    switch(type) {
+        case INFO:
+            informationColor = '#FFFFFF'; // White
+            break;
+        case CONNECT:
+            informationColor = '#28a745'; // Green
+            break;
+        case DISCONNECT:
+            informationColor = '#dc3545'; // Red
+            break;
+        case TEST:
+            informationColor = '#007bff'; // Blue
+            break;
+        case ERROR:
+            informationColor = '#dc3545'; // Red
+            break;
+        default:
+            informationColor = '#FFFFFF'; // White
+            break;
+    }
+    deviceStatus.style.color = informationColor;
 }
 
 // Function to handle device selection and display
@@ -358,7 +375,7 @@ async function scanForDevices() {
             );
         } else {
             console.error('Error during Bluetooth scan:', error);
-            updateStatus(`Error during scan: ${error.message}`, true);
+            updateStatus(`Error during scan: ${error.message}`, ERROR);
             alert(
                 'An error occurred during the Bluetooth scan. Please try again.',
             );
@@ -407,7 +424,7 @@ async function connectToDevice(device) {
         console.log('Attempting to connect to GATT server...');
         const server = await device.gatt.connect();
         console.log(`Connected to ${device.name}`);
-        updateStatus(`Connected to ${device.name}`);
+        updateStatus(`Connected to ${device.name}`,CONNECT);
 
         // Initialize Plotly chart
         initializePlot();
@@ -449,12 +466,11 @@ async function connectToDevice(device) {
                 'characteristicvaluechanged',
                 handleCharacteristicValueChanged,
             );
-            updateStatus('Receiving RSSI data...');
         } else {
             console.warn('Characteristic does not support notifications.');
             updateStatus(
                 'Characteristic does not support notifications.',
-                true,
+                ERROR,
             );
             alert(
                 'The selected device does not support notifications for the required characteristic.',
@@ -474,7 +490,7 @@ async function connectToDevice(device) {
         disconnectButton.disabled = false;
     } catch (error) {
         console.error('Error connecting to device:', error);
-        updateStatus(`Error connecting to device: ${error.message}`, true);
+        updateStatus(`Error connecting to device: ${error.message}`, ERROR);
         alert(
             'An error occurred while connecting to the device. Please try again.',
         );
@@ -489,7 +505,7 @@ async function handleCharacteristicValueChanged(event) {
 
     if (data.length < 15) {
         console.warn('Received data packet is smaller than expected.');
-        updateStatus('Received incomplete data packet.', true);
+        updateStatus('Received incomplete data packet.', ERROR);
         return;
     }
 
@@ -506,7 +522,7 @@ async function handleCharacteristicValueChanged(event) {
     const currentTime = new Date();
 
     if (isLogging) {
-        saveLog(currentTime, rssi, tx_power, currentSetTxPower);
+        saveLog(currentTime, rssi, tx_power);
     }
     // Update the Plotly chart with the RSSI value
     updatePlot(rssi);
@@ -516,9 +532,7 @@ async function handleCharacteristicValueChanged(event) {
 async function disconnectDevice() {
     if (connectedDevice && connectedDevice.gatt.connected) {
         connectedDevice.gatt.disconnect();
-        console.log(`Disconnected from ${connectedDevice.name}`);
         updateStatus(`Disconnected from ${connectedDevice.name}`);
-        updateStatus(`Cleaning plot from ${connectedDevice.name}`);
         // Reset the Plotly plot
         resetPlot();
     }
@@ -536,7 +550,7 @@ window.addEventListener('resize', () => {
 // Function to write a constant TX power value to the write_characteristic
 async function setTxPower(value) {
     if (!write_characteristic) {
-        updateStatus('No write_characteristic available for writing.', true);
+        updateStatus('No write_characteristic available for writing.', ERROR);
         return;
     }
 
@@ -546,8 +560,7 @@ async function setTxPower(value) {
         // Write the value to the write_characteristic
         await write_characteristic.writeValue(txPowerValue);
     } catch (error) {
-        console.error('Error writing TX Power:', error);
-        updateStatus(`Error setting TX Power: ${error.message}`, true);
+        updateStatus(`Error setting TX Power: ${error.message}`, ERROR);
     }
 }
 
@@ -570,31 +583,33 @@ testButton.addEventListener('click', async function () {
 
     if (userInput !== null && userInput.trim() !== '') {
         isLogging = true;
-        updateStatus('Start Logging');
+        updateStatus('Testing',TEST);
         clearDisplay();
 
         // Loop from 20 to -13
-        for (let i = 20; i >= -13; i--) {
+        for (let i = 20; i >= -20; i--) {
             if (connectedDevice && connectedDevice.gatt.connected) {
-                currentSetTxPower = i;
-
                 // Ensure setTxPower completes before proceeding
                 await setTxPower(i);
                 deviceSetTxPowerSpan.textContent = `${i} dBm`;
-
                 // Delay before the next iteration
-                await sleep(500);
+                await sleep(1500);
             } else {
                 deviceSetTxPowerSpan.textContent = `N/A dBm`;
                 break;
             }
         }
+        if (connectedDevice && connectedDevice.gatt.connected) {
+            await setTxPower(20);
+            deviceSetTxPowerSpan.textContent = `${20} dBm`;
+        }
+
 
         isLogging = false;
 
         // Download the logs when logging stops
         await downloadLogsAsCSV(userInput);
-
+        updateStatus('Test Finished');
         // Clear logs after download (optional)
         await clearLogs();
     } else {

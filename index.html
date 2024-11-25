@@ -1,126 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <title>Real-Time RSSI Plot with Plotly.js and BLE</title>
-        <!-- Include Plotly.js via CDN -->
-        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-        <!-- Include Font Awesome for icons -->
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        />
-        <!-- Meta tag for responsive design -->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <!-- Link to external CSS file -->
-        <link rel="stylesheet" href="resources/css/styles.css" />
-    </head>
-    <body>
-        <h1>Real-Time RSSI Data Plot</h1>
-        <div id="plot"></div>
-        <div id="controls">
-            <button
-                id="scanButton"
-                aria-label="Scan for MIDAS Bluetooth Devices"
-            >
-                <i class="fas fa-search"></i> Scan
-            </button>
-            <button
-                id="disconnectButton"
-                aria-label="Disconnect from Bluetooth Device"
-                disabled
-            >
-                <i class="fas fa-times-circle"></i> Disconnect
-            </button>
-            <button
-                id="testButton"
-                aria-label="Disconnect from Bluetooth Device"
-                test
-            >
-                <i class="fas fa-circle"></i> Test
-            </button>
-            <!-- Combo Box Added Here -->
+<head>
+    <meta charset="UTF-8" />
+    <title>Real-Time RSSI Plot with Plotly.js and BLE</title>
+    <!-- Include Plotly.js via CDN -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Include Font Awesome for icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Meta tag for responsive design -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="resources/css/styles.css" />
+</head>
+<body>
+    <!-- Header Section -->
+    <header id="pageHeader">
+        <img src="resources/imgs/Logo_Pegasus_White_with_Black.png" alt="Company Logo" id="companyLogo">
+        <h1>MIDAS Petawawa Range Testing Tool</h1>
+    </header>
+    <!-- <h1>Real-Time RSSI Data Plot</h1> -->
+    <div id="plot"></div>
 
-            <select id="txPowers" name="txPowers" class="combo-box">
-                <option value="">--Select TX Power--</option>
-                <option value="-40">-40 dBm</option>
-                <option value="-20">-20 dBm</option>
-                <option value="0">0 dBm</option>
-                <option value="4">4 dBm</option>
-                <option value="8">8 dBm</option>
-                <option value="12">12 dBm</option>
-                <option value="13">13 dBm</option>
-                <option value="14">14 dBm</option>
-                <option value="15">15 dBm</option>
-                <option value="16">16 dBm</option>
-                <option value="17">17 dBm</option>
-                <option value="18">18 dBm</option>
-                <option value="19">19 dBm</option>
-                <option value="20">20 dBm</option>
-                <!-- Add more options as needed -->
-            </select>
+    <!-- Main Container for Left and Right Sections -->
+    <div id="mainContainer">
+        <!-- Left Side: Controls and Device Info -->
+        <div id="leftContainer">
+            <!-- Controls Section -->
+            <div id="controls">
+                <button
+                    id="scanButton"
+                    aria-label="Scan for MIDAS Bluetooth Devices"
+                >
+                    <i class="fas fa-search"></i> Scan
+                </button>
+                <button
+                    id="disconnectButton"
+                    aria-label="Disconnect from Bluetooth Device"
+                    disabled
+                >
+                    <i class="fas fa-times-circle"></i> Disconnect
+                </button>
+                <button
+                    id="testButton"
+                    aria-label="Test Bluetooth Device"
+                >
+                    <i class="fas fa-circle"></i> Test
+                </button>
+                <!-- Combo Box -->
+                <select id="txPowers" name="txPowers" class="combo-box">
+                    <option value="">--Select TX Power--</option>
+                    <option value="-40">-40 dBm</option>
+                    <option value="-20">-20 dBm</option>
+                    <option value="0">0 dBm</option>
+                    <option value="4">4 dBm</option>
+                    <option value="8">8 dBm</option>
+                    <option value="12">12 dBm</option>
+                    <option value="13">13 dBm</option>
+                    <option value="14">14 dBm</option>
+                    <option value="15">15 dBm</option>
+                    <option value="16">16 dBm</option>
+                    <option value="17">17 dBm</option>
+                    <option value="18">18 dBm</option>
+                    <option value="19">19 dBm</option>
+                    <option value="20">20 dBm</option>
+                    <!-- Add more options as needed -->
+                </select>
+            </div>
+            <!-- Device Information Section -->
+            <div id="deviceInfo">
+                <div class="device-item">
+                    <strong>Device Name:</strong> <span id="deviceName">N/A</span>
+                </div>
+                <div class="device-item">
+                    <strong>Device Version:</strong>
+                    <span id="deviceVersion">N/A</span>
+                </div>
+                <div class="device-item">
+                    <strong>Device Set TX Power:</strong>
+                    <span id="deviceSetTxPower">N/A</span>
+                </div>
+                <div class="device-item">
+                    <strong>Device Actual TX Power:</strong>
+                    <span id="deviceActualTxPower">N/A</span>
+                </div>
+                <div class="device-item">
+                    <strong>RSSI:</strong>
+                    <span id="deviceRSSI">N/A</span>
+                </div>
+                <div class="device-item">
+                    <strong>Status:</strong>
+                    <span id="deviceStatus">N/A</span>
+                </div>
+            </div>
         </div>
-        <!-- New Device Information Section -->
-        <div id="deviceInfo">
-            <div class="device-item">
-                <strong>Device Name:</strong> <span id="deviceName">N/A</span>
-            </div>
-            <div class="device-item">
-                <strong>Device Version:</strong>
-                <span id="deviceVersion">N/A</span>
-            </div>
-            <div class="device-item">
-                <strong>Device Set TX Power:</strong>
-                <span id="deviceSetTxPower">N/A</span>
-            </div>
-            <div class="device-item">
-                <strong>Device Actual TX Power:</strong>
-                <span id="deviceActualTxPower">N/A</span>
-            </div>
-            <div class="device-item">
-                <strong>RSSI:</strong>
-                <span id="deviceRSSI">N/A</span>
-            </div>
+        <!-- Right Side: Log Container -->
+        <div id="logContainer">
+            <ul id="dataList"></ul>
+            <button id="copyButton">Copy</button>
         </div>
-        <div
-            id="logContainer"
-            style="
-                position: relative;
-                width: 100%;
-                max-width: 600px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                padding: 10px;
-                overflow-y: auto;
-                max-height: 300px;
-            "
-        >
-            <ul
-                id="dataList"
-                style="list-style: none; padding: 0; margin: 0"
-            ></ul>
-            <button
-                id="copyButton"
-                style="
-                    position: absolute;
-                    top: 10px;
-                    right: 10px;
-                    display: none;
-                    background: #007bff;
-                    color: white;
-                    border: none;
-                    padding: 5px 10px;
-                    border-radius: 3px;
-                    cursor: pointer;
-                "
-            >
-                Copy
-            </button>
-        </div>
+    </div>
 
-        <div id="status"></div>
+    <div id="status"></div>
 
-        <!-- Link to your external JavaScript file -->
-        <script src="resources/js/app.js"></script>
-    </body>
+    <!-- Link to your external JavaScript file -->
+    <script src="resources/js/app.js"></script>
+</body>
 </html>

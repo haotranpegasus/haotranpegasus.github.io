@@ -1,25 +1,73 @@
+/* Global Reset and Box-Sizing */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header Styling */
+#pageHeader {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #f8f9fa; /* Light background for contrast */
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Logo Styling */
+#companyLogo {
+    height: 60px; /* Adjust based on your logo dimensions */
+    width: auto;
+    margin-right: 20px;
+}
+
+/* Title Styling */
+#pageHeader h1 {
+    font-size: 2em;
+    color: #333333;
+    margin: 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    #pageHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #companyLogo {
+        margin-bottom: 10px;
+    }
+
+    #pageHeader h1 {
+        font-size: 1.5em;
+    }
+}
+
 /* Dark Theme Styles */
 body {
     background-color: #121212;
     color: #ffffff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
-    padding: 20px;
+    padding: 20px; /* Removed padding to eliminate side spaces */
     box-sizing: border-box;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    /* Removed flex properties to allow full-width mainContainer */
 }
 
+/* Header Styling */
 h1 {
-    margin-bottom: 2px;
-    font-size: 150%;
+    margin-bottom: 20px;
+    font-size: 2em;
+    text-align: center; /* Center the header text */
 }
 
+/* Plot Section */
 #plot {
     width: 100%;
-    height: 100vh; /* Adjusted to take 60% of the viewport height */
+    height: 60vh; /* Adjusted to take 60% of the viewport height */
     max-height: 600px; /* Maximum height for larger screens */
     margin: auto;
     background-color: #1e1e1e;
@@ -27,49 +75,51 @@ h1 {
     overflow: hidden;
 }
 
-#logContainer {
-    font-family: Arial, sans-serif;
-    background: #f9f9f9;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-#dataList li {
-    padding: 5px 10px;
-    border-bottom: 1px solid #ddd;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-#dataList li:last-child {
-    border-bottom: none;
-}
-
-#copyButton:hover {
-    background: #0056b3;
-}
-
-#controls {
-    margin-top: 20px;
+/* Main Container */
+#mainContainer {
     display: flex;
-    flex-direction: row; /* Changed from column to row for horizontal alignment */
-    gap: 20px; /* Adds space between buttons */
-    flex-wrap: wrap; /* Allows buttons to wrap on smaller screens */
-    justify-content: center;
-    width: 100%;
-    max-width: 800px;
+    flex-direction: row;
+    width: 100%; /* Full width */
+    /* Removed max-width to allow full width */
+    height: auto; /* Adjust height based on content */
 }
+
+/* Left Container */
+#leftContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1; /* Takes up 50% of the width */
+    width: 50%; /* Explicitly set to 50% */
+    padding: 0 10px; /* Optional: Add horizontal padding if needed */
+}
+
+/* Controls Section */
+#controls {
+    display: flex;
+    flex-direction: row; /* Horizontal alignment */
+    gap: 20px; /* Space between elements */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    justify-content: flex-start; /* Align items to the start */
+    width: 100%; /* Full width of leftContainer */
+    padding: 10px; /* Adds padding inside the container */
+    background-color: #1e1e1e; /* Background color for visibility */
+    border-radius: 8px;
+}
+
+/* Control Items (if any additional wrappers are used) */
 .control-item {
     display: flex;
     flex-direction: column;
-    /* Optional: Adjust width or other styles as needed */
 }
 
+/* Style Labels within Control Items */
 .control-item label {
     margin-bottom: 5px;
     font-size: 16px;
 }
 
+/* Buttons Styling */
 button {
     padding: 12px 24px;
     font-size: 16px;
@@ -83,6 +133,13 @@ button {
     max-width: 300px; /* Maximum width for buttons */
 }
 
+/* Disabled Button Styling */
+button:disabled {
+    background-color: #6c757d; /* Gray background for disabled state */
+    cursor: not-allowed;
+}
+
+/* Button Hover and Active States */
 button:hover {
     background-color: #3700b3;
 }
@@ -93,7 +150,6 @@ button:active {
 
 /* Device Information Section */
 #deviceInfo {
-    margin-top: 10px;
     padding: 10px;
     background-color: #1e1e1e;
     border-radius: 8px;
@@ -101,14 +157,7 @@ button:active {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 10px;
     width: 100%;
-    max-width: 800px;
-}
-
-#status {
-    margin-top: 20px;
-    font-weight: bold;
-    font-size: 18px;
-    color: #03dac6; /* Teal color for info */
+    box-sizing: border-box;
 }
 
 /* Combo Box Styles */
@@ -127,8 +176,10 @@ button:active {
     background-size: 10px;
     padding-right: 30px; /* Space for the custom arrow */
     cursor: pointer;
+    width: 100%; /* Ensure full width within control-item */
 }
-/* Attempt to style the <option> elements */
+
+/* Style <option> elements */
 .combo-box option {
     background-color: #1e1e1e;
     color: #ffffff;
@@ -143,7 +194,92 @@ button:active {
     box-shadow: 0 0 5px rgba(3, 218, 198, 0.5);
 }
 
+/* Log Container */
+#logContainer {
+    display: flex;
+    flex-direction: column;
+    width: 50%; /* 50% width */
+    background: #f9f9f9;
+    color: #000000; /* Better contrast for logs */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    overflow-y: auto;
+    max-height: 300px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Log List Styling */
+#dataList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#dataList li {
+    padding: 5px 10px;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#dataList li:last-child {
+    border-bottom: none;
+}
+
+/* Copy Button Styling */
+#copyButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: none; /* Controlled via JavaScript */
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+#copyButton:hover {
+    background: #0056b3;
+}
+
+/* Status Section (if applicable) */
+#status {
+    margin-top: 20px;
+    font-weight: bold;
+    font-size: 18px;
+    color: #03dac6; /* Teal color for info */
+    text-align: left;
+}
+
 /* Responsive Design */
+@media (max-width: 1200px) {
+    #mainContainer {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    #leftContainer,
+    #logContainer {
+        width: 100%;
+    }
+}
+
+@media (max-width: 800px) {
+    #mainContainer {
+        flex-direction: column;
+    }
+
+    #leftContainer,
+    #logContainer {
+        width: 100%;
+    }
+}
+
 @media (max-width: 600px) {
     #plot {
         height: 50vh; /* Reduce chart height on smaller screens */
@@ -152,40 +288,20 @@ button:active {
         width: 100%; /* Buttons take full width on very small screens */
         max-width: none;
     }
-    .checkbox-container {
-        padding-left: 35px;
-    }
     /* Ensure combo box spans full width on small screens */
     .control-item {
         width: 100%;
     }
     .combo-box {
         width: 100%;
+        max-width: none;
     }
     /* Adjust #deviceInfo grid for smaller screens */
     #deviceInfo {
         grid-template-columns: 1fr;
     }
-}
-
-/* New Styles for Left Alignment */
-
-/* Align #controls, #deviceInfo, and #status to the left */
-#controls,
-#deviceInfo,
-#status {
-    align-self: flex-start; /* Overrides the parent alignment to align left */
-    width: 100%; /* Ensures the elements take full available width */
-    max-width: 800px; /* Maintains consistency with existing max-width */
-}
-
-/* Optional: Adjust internal alignment within #controls if needed */
-#controls button {
-    flex: 1 1 200px; /* Ensures buttons are responsive and flexible */
-    max-width: 300px; /* Maximum width for buttons */
-}
-
-/* Ensure text within #status is left-aligned */
-#status {
-    text-align: left;
+    /* Stack mainContainer vertically on small screens */
+    #mainContainer {
+        flex-direction: column;
+    }
 }
