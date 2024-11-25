@@ -548,7 +548,7 @@ window.addEventListener('resize', () => {
 });
 
 // Function to write a constant TX power value to the write_characteristic
-async function setTxPower(value) {
+async function setTxPower(value,test=1) {
     if (!write_characteristic) {
         updateStatus('No write_characteristic available for writing.', ERROR);
         return;
@@ -556,7 +556,7 @@ async function setTxPower(value) {
 
     try {
         // Convert the TX power value to a Uint8Array
-        const txPowerValue = new Uint8Array([value]);
+        const txPowerValue = new Uint8Array([value,test]);
         // Write the value to the write_characteristic
         await write_characteristic.writeValue(txPowerValue);
     } catch (error) {
@@ -590,7 +590,7 @@ testButton.addEventListener('click', async function () {
         for (let i = 20; i >= -20; i--) {
             if (connectedDevice && connectedDevice.gatt.connected) {
                 // Ensure setTxPower completes before proceeding
-                await setTxPower(i);
+                await setTxPower(i,0);
                 deviceSetTxPowerSpan.textContent = `${i} dBm`;
                 // Delay before the next iteration
                 await sleep(1500);
