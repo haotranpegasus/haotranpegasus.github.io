@@ -5,7 +5,6 @@
         <title>Real-Time RSSI Plot with Plotly.js and BLE</title>
         <!-- Include Plotly.js via CDN -->
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
         <!-- Include Font Awesome for icons -->
         <link
             rel="stylesheet"
@@ -41,37 +40,25 @@
                 <i class="fas fa-circle"></i> Test
             </button>
             <!-- Combo Box Added Here -->
-            <div class="control-item">
-                <label for="txPowers">Select TX Power:</label>
-                <select id="txPowers" name="txPowers" class="combo-box">
-                    <option value="">--Select TX Power--</option>
-                    <option value="-40">-40 dBm</option>
-                    <option value="-20">-20 dBm</option>
-                    <option value="0">0 dBm</option>
-                    <option value="4">4 dBm</option>
-                    <option value="8">8 dBm</option>
-                    <option value="12">12 dBm</option>
-                    <option value="13">13 dBm</option>
-                    <option value="14">14 dBm</option>
-                    <option value="15">15 dBm</option>
-                    <option value="16">16 dBm</option>
-                    <option value="17">17 dBm</option>
-                    <option value="18">18 dBm</option>
-                    <option value="19">19 dBm</option>
-                    <option value="20">20 dBm</option>
-                    <!-- Add more options as needed -->
-                </select>
-            </div>
-            <!-- Combo Box Added Here -->
-            <label class="checkbox-container">
-                <input
-                    type="checkbox"
-                    id="logButton"
-                    aria-label="Log RSSI Data"
-                />
-                <span class="checkmark"></span>
-                <span>Log RSSI Data</span>
-            </label>
+
+            <select id="txPowers" name="txPowers" class="combo-box">
+                <option value="">--Select TX Power--</option>
+                <option value="-40">-40 dBm</option>
+                <option value="-20">-20 dBm</option>
+                <option value="0">0 dBm</option>
+                <option value="4">4 dBm</option>
+                <option value="8">8 dBm</option>
+                <option value="12">12 dBm</option>
+                <option value="13">13 dBm</option>
+                <option value="14">14 dBm</option>
+                <option value="15">15 dBm</option>
+                <option value="16">16 dBm</option>
+                <option value="17">17 dBm</option>
+                <option value="18">18 dBm</option>
+                <option value="19">19 dBm</option>
+                <option value="20">20 dBm</option>
+                <!-- Add more options as needed -->
+            </select>
         </div>
         <!-- New Device Information Section -->
         <div id="deviceInfo">
@@ -90,12 +77,48 @@
                 <strong>Device Actual TX Power:</strong>
                 <span id="deviceActualTxPower">N/A</span>
             </div>
+            <div class="device-item">
+                <strong>RSSI:</strong>
+                <span id="deviceRSSI">N/A</span>
+            </div>
         </div>
+        <div
+            id="logContainer"
+            style="
+                position: relative;
+                width: 100%;
+                max-width: 600px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                padding: 10px;
+                overflow-y: auto;
+                max-height: 300px;
+            "
+        >
+            <ul
+                id="dataList"
+                style="list-style: none; padding: 0; margin: 0"
+            ></ul>
+            <button
+                id="copyButton"
+                style="
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    display: none;
+                    background: #007bff;
+                    color: white;
+                    border: none;
+                    padding: 5px 10px;
+                    border-radius: 3px;
+                    cursor: pointer;
+                "
+            >
+                Copy
+            </button>
+        </div>
+
         <div id="status"></div>
-        <div>
-            <h3>Scan the QR Code Below:</h3>
-            <canvas id="qrcode"></canvas>
-        </div>
 
         <!-- Link to your external JavaScript file -->
         <script src="resources/js/app.js"></script>

@@ -1,10 +1,17 @@
 // Get references to DOM elements
 const scanButton = document.getElementById('scanButton');
 const disconnectButton = document.getElementById('disconnectButton');
-const logButton = document.getElementById('logButton'); // Checkbox instead of button
 const statusDiv = document.getElementById('status');
 const deviceNameSpan = document.getElementById('deviceName');
 const deviceVersionSpan = document.getElementById('deviceVersion');
+const deviceRssi = document.getElementById('deviceRSSI');
+
+const txPowersSelect = document.getElementById('txPowers');
+const deviceSetTxPowerSpan = document.getElementById('deviceSetTxPower');
+const deviceActualTxPowerSpan = document.getElementById('deviceActualTxPower');
+const testButton = document.getElementById('testButton');
+
+let currentSetTxPower = null;
 let connectedDevice = null;
 let characteristic = null;
 let write_characteristic = null;
@@ -14,6 +21,10 @@ let isLogging = false;
 const MIDAS_SERVICE_UUID = '480b1ce0-92ab-485a-af98-80d6727becf1';
 const MIDAS_CHARACTERISTIC_UUID = '480b1ce1-92ab-485a-af98-80d6727becf4';
 const MIDAS_WRITE_CHARACTERISTIC_UUID = '480b1ce1-92ab-485a-af98-80d6727becf5';
+
+// Add event listeners to the scan, disconnect, and log checkbox
+scanButton.addEventListener('click', scanForDevices);
+disconnectButton.addEventListener('click', disconnectDevice);
 
 // Initialize Plotly chart with dark theme settings
 const plotDiv = document.getElementById('plot');
@@ -151,12 +162,12 @@ function openDatabase() {
 }
 
 // Save log data to IndexedDB
-async function saveLog(timestamp, rssi, actualTxPower) {
+async function saveLog(timestamp, rssi, actualTxPower, setTxPower) {
     try {
         const db = await openDatabase();
         const transaction = db.transaction('logs', 'readwrite');
         const store = transaction.objectStore('logs');
-        store.add({timestamp, rssi, actualTxPower});
+        store.add({timestamp, rssi, actualTxPower, setTxPower});
         transaction.oncomplete = () => console.log('Log saved.');
         transaction.onerror = (event) =>
             console.error('Error saving log:', event.target.error);
@@ -167,12 +178,23 @@ async function saveLog(timestamp, rssi, actualTxPower) {
 }
 
 // Retrieve all logs and export as CSV
-async function exportLogs() {
+async function exportLogs(pointName) {
     try {
         const db = await openDatabase();
         const transaction = db.transaction('logs', 'readonly');
         const store = transaction.objectStore('logs');
         const logs = [];
+
+        // Retrieve metadata (you can replace these with actual values from your application)
+        const metadata = {
+            deviceName:
+                document.getElementById('deviceName').textContent ||
+                'Unknown Device',
+            deviceVersion:
+                document.getElementById('deviceVersion').textContent ||
+                'Unknown Version',
+            point: pointName,
+        };
 
         return new Promise((resolve, reject) => {
             const request = store.openCursor();
@@ -182,14 +204,26 @@ async function exportLogs() {
                     logs.push(cursor.value);
                     cursor.continue();
                 } else {
-                    // All logs retrieved, now convert to CSV
-                    let csvContent =
-                        'Timestamp,RSSI (dBm),Actual TX Power (dBm)\n';
+                    // All logs retrieved, now construct the CSV content
+
+                    // Add metadata to the top of the CSV
+                    let csvContent = `Device Name:${metadata.deviceName}\n`;
+                    csvContent += `Device Version:${metadata.deviceVersion}\n`;
+                    csvContent += `Point:${metadata.point}\n`;
+
+                    // Add headers for the log data
+                    csvContent +=
+                        'Timestamp,RSSI (dBm),Actual TX Power (dBm), Set TX Power (dBm)\n';
+
+                    // Add the log data
                     logs.forEach((log) => {
                         csvContent += `${new Date(
                             log.timestamp,
-                        ).toISOString()},${log.rssi},${log.actualTxPower}\n`;
+                        ).toISOString()},${log.rssi},${log.actualTxPower},${
+                            log.setTxPower
+                        }\n`;
                     });
+
                     resolve(csvContent);
                 }
             };
@@ -201,46 +235,70 @@ async function exportLogs() {
     }
 }
 
-async function downloadLogsAsCSV() {
+async function downloadLogsAsCSV(pointName) {
     try {
         updateStatus('Stage 1: Starting log export', false);
 
         // Get the CSV content
-        const csvContent = await exportLogs();
+        const csvContent = await exportLogs(pointName);
         updateStatus('Stage 2: Log export completed', false);
 
-        // Encode the CSV content to fit in a QR code
-        if (csvContent.length > 3000) {
-            throw new Error(
-                'CSV content is too large for a QR code. Please use a different method.',
-            );
-        }
+        // Display the data in a scrollable container
+        displayData(csvContent);
+        updateStatus('Stage 3: Data displayed', false);
 
-        // Create a container for the QR code
-        const qrCodeContainer = document.getElementById('qrcode');
-        qrCodeContainer.innerHTML = ''; // Clear any existing QR code
-
-        // Generate the QR code
-        QRCode.toCanvas(
-            qrCodeContainer,
-            csvContent,
-            {width: 256},
-            function (error) {
-                if (error) {
-                    console.error('Error generating QR code:', error);
-                    updateStatus('Error generating QR code.', true);
-                } else {
-                    updateStatus('QR code generated successfully.', false);
-                    alert(
-                        'QR code generated! Scan it with another device to retrieve the data.',
-                    );
-                }
-            },
-        );
+        // Add copy button functionality
+        createCopyButton(csvContent);
+        updateStatus('Stage 4: Copy button added', false);
     } catch (error) {
-        console.error('Error generating QR code:', error);
-        alert('Failed to generate QR code. Check console for details.');
+        console.error('Error displaying data:', error);
+        updateStatus('Error displaying data.', true);
     }
+}
+
+// Function to display data in a scrollable container
+function displayData(data) {
+    const dataList = document.getElementById('dataList');
+    dataList.innerHTML = ''; // Clear existing data
+
+    const rows = data.split('\n');
+    rows.forEach((row) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = row;
+        dataList.appendChild(listItem);
+    });
+
+    // Ensure the copy button is visible
+    const copyButton = document.getElementById('copyButton');
+    copyButton.style.display = 'inline-block';
+}
+
+// Function to create a copy button
+function createCopyButton(data) {
+    const copyButton = document.getElementById('copyButton');
+
+    copyButton.onclick = () => {
+        const textarea = document.createElement('textarea');
+        textarea.value = data;
+        document.body.appendChild(textarea);
+
+        textarea.select();
+        document.execCommand('copy');
+
+        document.body.removeChild(textarea);
+
+        alert('Data copied to clipboard!');
+    };
+}
+
+// Function to clear displayed data and hide the copy button
+function clearDisplay() {
+    const dataList = document.getElementById('dataList');
+    const copyButton = document.getElementById('copyButton');
+
+    dataList.innerHTML = ''; // Clear the list content
+    copyButton.style.display = 'none'; // Hide the copy button
+    updateStatus('Display cleared', false);
 }
 
 // Clear all logs from IndexedDB
@@ -261,8 +319,8 @@ async function clearLogs() {
 
 // Function to update status messages
 function updateStatus(message, isError = false) {
-    statusDiv.textContent = message;
-    statusDiv.style.color = isError ? '#cf6679' : '#03dac6'; // Red for errors, Teal for info
+    // statusDiv.textContent = message;
+    // statusDiv.style.color = isError ? '#cf6679' : '#03dac6'; // Red for errors, Teal for info
 }
 
 // Function to handle device selection and display
@@ -437,20 +495,19 @@ async function handleCharacteristicValueChanged(event) {
 
     // Extract RSSI from the 13th byte (index 12)
     let rssi = data[12];
-
     let tx_power = data[14];
-    tx_power = tx_power > 127 ? tx_power - 256 : tx_power;
-    deviceActualTxPowerSpan.textContent = tx_power;
 
-    // Convert RSSI to signed integer if necessary
+    tx_power = tx_power > 127 ? tx_power - 256 : tx_power;
     rssi = rssi > 127 ? rssi - 256 : rssi;
+
+    deviceActualTxPowerSpan.textContent = `${tx_power} dBm`;
+    deviceRssi.textContent = `${rssi} dBm`;
 
     const currentTime = new Date();
 
     if (isLogging) {
-        saveLog(currentTime, rssi, tx_power);
+        saveLog(currentTime, rssi, tx_power, currentSetTxPower);
     }
-
     // Update the Plotly chart with the RSSI value
     updatePlot(rssi);
 }
@@ -470,22 +527,6 @@ async function disconnectDevice() {
     scanButton.disabled = false;
     disconnectButton.disabled = true;
 }
-
-// Function to handle logging toggle
-async function handleLogToggle() {
-    // if (logButton.checked) {
-    //     // Start logging
-    //     await startLogging();
-    // } else {
-    //     // Stop logging
-    //     await stopLogging();
-    // }
-}
-
-// Add event listeners to the scan, disconnect, and log checkbox
-scanButton.addEventListener('click', scanForDevices);
-disconnectButton.addEventListener('click', disconnectDevice);
-logButton.addEventListener('change', handleLogToggle);
 
 // Handle window resize to make Plotly chart responsive
 window.addEventListener('resize', () => {
@@ -510,10 +551,6 @@ async function setTxPower(value) {
     }
 }
 
-const txPowersSelect = document.getElementById('txPowers');
-const deviceSetTxPowerSpan = document.getElementById('deviceSetTxPower');
-const deviceActualTxPowerSpan = document.getElementById('deviceActualTxPower');
-
 txPowersSelect.addEventListener('change', function () {
     const selectedValue = this.value;
     const selectedText = this.options[this.selectedIndex].text;
@@ -527,21 +564,40 @@ function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const testButton = document.getElementById('testButton');
 testButton.addEventListener('click', async function () {
-    isLogging = true;
-    updateStatus('Start Logging');
-    for (let i = 1; i > -1; i--) {
-        if (connectedDevice && connectedDevice.gatt.connected) {
-            setTxPower(i);
-            deviceSetTxPowerSpan.textContent = `${i} dBm`;
-            await sleep(1500); // Waits for 1000ms (1 second) before the next iteration
-        } else {
-            deviceSetTxPowerSpan.textContent = `N/A dBm`;
-            break;
+    // Prompt the user for input
+    const userInput = prompt('Please enter a text:');
+
+    if (userInput !== null && userInput.trim() !== '') {
+        isLogging = true;
+        updateStatus('Start Logging');
+        clearDisplay();
+
+        // Loop from 20 to -13
+        for (let i = 20; i >= -13; i--) {
+            if (connectedDevice && connectedDevice.gatt.connected) {
+                currentSetTxPower = i;
+
+                // Ensure setTxPower completes before proceeding
+                await setTxPower(i);
+                deviceSetTxPowerSpan.textContent = `${i} dBm`;
+
+                // Delay before the next iteration
+                await sleep(500);
+            } else {
+                deviceSetTxPowerSpan.textContent = `N/A dBm`;
+                break;
+            }
         }
+
+        isLogging = false;
+
+        // Download the logs when logging stops
+        await downloadLogsAsCSV(userInput);
+
+        // Clear logs after download (optional)
+        await clearLogs();
+    } else {
+        alert('No input provided. Skipping test');
     }
-    isLogging = false;
-    await downloadLogsAsCSV(); // Download the logs when logging stops
-    await clearLogs(); // Clear logs after download (optional)
 });

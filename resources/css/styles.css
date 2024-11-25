@@ -15,7 +15,6 @@ body {
 h1 {
     margin-bottom: 2px;
     font-size: 150%;
-
 }
 
 #plot {
@@ -26,6 +25,28 @@ h1 {
     background-color: #1e1e1e;
     border-radius: 8px;
     overflow: hidden;
+}
+
+#logContainer {
+    font-family: Arial, sans-serif;
+    background: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#dataList li {
+    padding: 5px 10px;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#dataList li:last-child {
+    border-bottom: none;
+}
+
+#copyButton:hover {
+    background: #0056b3;
 }
 
 #controls {
@@ -90,73 +111,6 @@ button:active {
     color: #03dac6; /* Teal color for info */
 }
 
-/* Custom Checkbox Styles */
-.checkbox-container {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    font-size: 16px;
-    position: relative;
-    user-select: none;
-    padding-left: 35px;
-    margin: 0;
-    color: #ffffff;
-}
-
-/* Hide the default checkbox */
-.checkbox-container input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-    height: 0;
-    width: 0;
-}
-
-/* Create a custom checkmark */
-.checkmark {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 24px;
-    width: 24px;
-    background-color: #1e1e1e;
-    border: 2px solid #6200ee;
-    border-radius: 4px;
-}
-
-/* On mouse-over, add a grey background color */
-.checkbox-container:hover input ~ .checkmark {
-    background-color: #333333;
-}
-
-/* When the checkbox is checked, add a blue background */
-.checkbox-container input:checked ~ .checkmark {
-    background-color: #6200ee;
-}
-
-/* Create the checkmark/indicator (hidden when not checked) */
-.checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-}
-
-/* Show the checkmark when checked */
-.checkbox-container input:checked ~ .checkmark:after {
-    display: block;
-}
-
-/* Style the checkmark/indicator */
-.checkbox-container .checkmark:after {
-    left: 8px;
-    top: 4px;
-    width: 6px;
-    height: 12px;
-    border: solid #ffffff;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-}
-
 /* Combo Box Styles */
 .combo-box {
     padding: 8px;
@@ -168,7 +122,8 @@ button:active {
     appearance: none; /* Remove default arrow */
     -webkit-appearance: none;
     -moz-appearance: none;
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="%23ffffff"><polygon points="0,0 10,0 5,5"/></svg>') no-repeat right 10px center;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="%23ffffff"><polygon points="0,0 10,0 5,5"/></svg>')
+        no-repeat right 10px center;
     background-size: 10px;
     padding-right: 30px; /* Space for the custom arrow */
     cursor: pointer;
@@ -213,7 +168,6 @@ button:active {
     }
 }
 
-
 /* New Styles for Left Alignment */
 
 /* Align #controls, #deviceInfo, and #status to the left */
@@ -221,8 +175,8 @@ button:active {
 #deviceInfo,
 #status {
     align-self: flex-start; /* Overrides the parent alignment to align left */
-    width: 100%;            /* Ensures the elements take full available width */
-    max-width: 800px;       /* Maintains consistency with existing max-width */
+    width: 100%; /* Ensures the elements take full available width */
+    max-width: 800px; /* Maintains consistency with existing max-width */
 }
 
 /* Optional: Adjust internal alignment within #controls if needed */
@@ -235,4 +189,3 @@ button:active {
 #status {
     text-align: left;
 }
-
