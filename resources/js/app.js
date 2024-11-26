@@ -213,9 +213,9 @@ async function exportLogs(pointName) {
                     // All logs retrieved, now construct the CSV content
 
                     // Add metadata to the top of the CSV
-                    let csvContent = `Device Name:${metadata.deviceName}\n`;
+                    let csvContent = `Point:${metadata.point}\n`;
+                    csvContent += `Device Name:${metadata.deviceName}\n`;
                     csvContent += `Device Version:${metadata.deviceVersion}\n`;
-                    csvContent += `Point:${metadata.point}\n`;
 
                     // Add headers for the log data
                     csvContent +=
